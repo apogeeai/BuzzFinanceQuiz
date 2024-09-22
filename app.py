@@ -2,6 +2,8 @@ import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import func
+import logging
 
 class Base(DeclarativeBase):
     pass
@@ -12,6 +14,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -109,6 +114,39 @@ def results(user_id):
 
     return render_template('results.html', result=result, percentage=percentage, tips=tips)
 
+@app.route('/admin')
+def admin_dashboard():
+    try:
+        app.logger.info("Accessing admin dashboard")
+        app.logger.debug(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        
+        total_users = User.query.count()
+        app.logger.info(f"Total users: {total_users}")
+        
+        total_quizzes = QuizResponse.query.count()
+        app.logger.info(f"Total quizzes: {total_quizzes}")
+        
+        avg_score = db.session.query(func.avg(
+            func.sum(func.cast(func.ascii(func.substr(QuizResponse.answers, 1, 1)) - 65, db.Integer)) +
+            func.sum(func.cast(func.ascii(func.substr(QuizResponse.answers, 2, 1)) - 65, db.Integer)) +
+            func.sum(func.cast(func.ascii(func.substr(QuizResponse.answers, 3, 1)) - 65, db.Integer)) +
+            func.sum(func.cast(func.ascii(func.substr(QuizResponse.answers, 4, 1)) - 65, db.Integer)) +
+            func.sum(func.cast(func.ascii(func.substr(QuizResponse.answers, 5, 1)) - 65, db.Integer))
+        ) / 20 * 100).scalar()
+        app.logger.info(f"Average score: {avg_score}")
+
+        recent_quizzes = db.session.query(User.name, User.email, QuizResponse.answers).\
+            join(QuizResponse, User.id == QuizResponse.user_id).\
+            order_by(QuizResponse.id.desc()).\
+            limit(10).all()
+        app.logger.info(f"Recent quizzes: {recent_quizzes}")
+
+        return render_template('admin.html', total_users=total_users, total_quizzes=total_quizzes,
+                               avg_score=avg_score, recent_quizzes=recent_quizzes)
+    except Exception as e:
+        app.logger.error(f"Error in admin dashboard: {str(e)}")
+        return "An error occurred while loading the admin dashboard", 500
+
 if __name__ == '__main__':
     create_tables()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080, debug=True)
