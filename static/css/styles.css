@@ -55,4 +55,10 @@ body {
 
 body, p, div, span, a, button, input, textarea, select {
     font-family: karla, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    color: #606776;
+    font-size: 2rem;
+}
+
+.text-blue-600 {
+    font-family: amsi, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
