@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import func
 from datetime import datetime
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
+from flask.cli import click
 
 class Base(DeclarativeBase):
     pass
@@ -225,6 +226,20 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+@app.cli.command("create-admin")
+@click.argument("email")
+def create_admin(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        user.is_admin = True
+        db.session.commit()
+        print(f"User {email} has been granted admin privileges.")
+    else:
+        new_admin = User(email=email, name="Admin", is_admin=True)
+        db.session.add(new_admin)
+        db.session.commit()
+        print(f"New admin user created with email: {email}")
 
 if __name__ == '__main__':
     create_tables()
