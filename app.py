@@ -1,11 +1,12 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import func
 from datetime import datetime
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from flask.cli import click
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Base(DeclarativeBase):
     pass
@@ -26,7 +27,14 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class QuizResponse(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -182,43 +190,53 @@ def admin_dashboard():
 
         if percentage < 20:
             result = "Blissful Butterfly"
-            result_distribution["Blissful Butterfly"] += 1
         elif percentage < 40:
             result = "Curious Cat"
-            result_distribution["Curious Cat"] += 1
         elif percentage < 60:
             result = "Busy Beaver"
-            result_distribution["Busy Beaver"] += 1
         elif percentage < 80:
             result = "Diligent Dolphin"
-            result_distribution["Diligent Dolphin"] += 1
         else:
             result = "Wise Wolf"
-            result_distribution["Wise Wolf"] += 1
+
+        result_distribution[result] += 1
 
         recent_responses.append({
             "user": response.user,
             "score": round(percentage, 2),
-            "result": result
+            "result": result,
+            "date": response.created_at.strftime("%Y-%m-%d %H:%M:%S")
         })
+
+    # Calculate daily quiz submissions for the last 7 days
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    daily_submissions = db.session.query(
+        func.date(QuizResponse.created_at).label('date'),
+        func.count(QuizResponse.id).label('count')
+    ).filter(QuizResponse.created_at >= seven_days_ago).group_by(func.date(QuizResponse.created_at)).all()
+
+    daily_submissions_data = {str(row.date): row.count for row in daily_submissions}
 
     return render_template('admin_dashboard.html',
                            total_users=total_users,
                            total_quizzes=total_quizzes,
-                           avg_percentage=avg_percentage,
+                           avg_percentage=round(avg_percentage, 2),
                            result_distribution=result_distribution,
-                           recent_responses=recent_responses)
+                           recent_responses=recent_responses,
+                           daily_submissions=daily_submissions_data)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email')
+        password = request.form.get('password')
         user = User.query.filter_by(email=email).first()
-        if user and user.is_admin:
+        if user and user.check_password(password) and user.is_admin:
             login_user(user)
             return redirect(url_for('admin_dashboard'))
         else:
-            return redirect(url_for('index'))
+            flash('Invalid email or password', 'error')
+            return redirect(url_for('login'))
     return render_template('login.html')
 
 @app.route('/logout')
@@ -229,17 +247,46 @@ def logout():
 
 @app.cli.command("create-admin")
 @click.argument("email")
-def create_admin(email):
+@click.argument("password")
+def create_admin(email, password):
     user = User.query.filter_by(email=email).first()
     if user:
         user.is_admin = True
+        user.set_password(password)
         db.session.commit()
-        print(f"User {email} has been granted admin privileges.")
+        print(f"User {email} has been granted admin privileges and password updated.")
     else:
         new_admin = User(email=email, name="Admin", is_admin=True)
+        new_admin.set_password(password)
         db.session.add(new_admin)
         db.session.commit()
         print(f"New admin user created with email: {email}")
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # In a real application, you would generate a unique token and send it via email
+            # For this example, we'll just redirect to a page where the user can enter a new password
+            return redirect(url_for('new_password', user_id=user.id))
+        else:
+            flash('Email not found', 'error')
+    return render_template('reset_password.html')
+
+@app.route('/new_password/<int:user_id>', methods=['GET', 'POST'])
+def new_password(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        user.set_password(new_password)
+        db.session.commit()
+        flash('Password has been updated', 'success')
+        return redirect(url_for('login'))
+    return render_template('new_password.html', user_id=user_id)
 
 if __name__ == '__main__':
     create_tables()

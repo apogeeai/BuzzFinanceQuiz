@@ -6,45 +6,106 @@
     <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     <div class="bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold mb-4">Quiz Statistics</h2>
         <p>Total Users: {{ total_users }}</p>
         <p>Total Quizzes Taken: {{ total_quizzes }}</p>
-        <p>Average Score: {{ avg_percentage|round(2) }}%</p>
+        <p>Average Score: {{ avg_percentage }}%</p>
     </div>
 
     <div class="bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold mb-4">Result Distribution</h2>
-        <ul>
-            {% for result, count in result_distribution.items() %}
-            <li>{{ result }}: {{ count }}</li>
-            {% endfor %}
-        </ul>
+        <canvas id="resultDistributionChart"></canvas>
     </div>
 </div>
 
-<div class="mt-8">
-    <h2 class="text-2xl font-semibold mb-4">Recent Quiz Responses</h2>
-    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="py-2 px-4 text-left">User</th>
-                <th class="py-2 px-4 text-left">Email</th>
-                <th class="py-2 px-4 text-left">Score</th>
-                <th class="py-2 px-4 text-left">Result</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for response in recent_responses %}
-            <tr>
-                <td class="py-2 px-4">{{ response.user.name }}</td>
-                <td class="py-2 px-4">{{ response.user.email }}</td>
-                <td class="py-2 px-4">{{ response.score }}%</td>
-                <td class="py-2 px-4">{{ response.result }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-xl font-semibold mb-4">Daily Quiz Submissions (Last 7 Days)</h2>
+    <canvas id="dailySubmissionsChart"></canvas>
 </div>
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold mb-4">Recent Quiz Responses</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full table-auto">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-2">User</th>
+                    <th class="px-4 py-2">Email</th>
+                    <th class="px-4 py-2">Score</th>
+                    <th class="px-4 py-2">Result</th>
+                    <th class="px-4 py-2">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in recent_responses %}
+                <tr>
+                    <td class="border px-4 py-2">{{ response.user.name }}</td>
+                    <td class="border px-4 py-2">{{ response.user.email }}</td>
+                    <td class="border px-4 py-2">{{ response.score }}%</td>
+                    <td class="border px-4 py-2">{{ response.result }}</td>
+                    <td class="border px-4 py-2">{{ response.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Result Distribution Chart
+    var resultDistributionCtx = document.getElementById('resultDistributionChart').getContext('2d');
+    var resultDistributionChart = new Chart(resultDistributionCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ result_distribution.keys() | list | tojson }},
+            datasets: [{
+                data: {{ result_distribution.values() | list | tojson }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // Daily Submissions Chart
+    var dailySubmissionsCtx = document.getElementById('dailySubmissionsChart').getContext('2d');
+    var dailySubmissionsChart = new Chart(dailySubmissionsCtx, {
+        type: 'line',
+        data: {
+            labels: {{ daily_submissions.keys() | list | tojson }},
+            datasets: [{
+                label: 'Daily Submissions',
+                data: {{ daily_submissions.values() | list | tojson }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
