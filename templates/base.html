@@ -7,6 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Note: We're using a fallback sans-serif font for Amsi since we don't have access to Adobe Fonts -->
+    <style>
+        @font-face {
+            font-family: 'Amsi';
+            src: local('Arial'), local('Helvetica'), local('sans-serif');
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-r from-blue-500 to-orange-500 min-h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
