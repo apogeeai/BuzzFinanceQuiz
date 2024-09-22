@@ -50,16 +50,22 @@ def submit_quiz():
         user_id = data.get('user_id')
         answers = data.get('answers')
         
+        print(f"Debug: Received user_id: {user_id}, answers: {answers}")
+        
         user = User.query.get(user_id)
         if not user:
+            print(f"Debug: User not found for user_id: {user_id}")
             return jsonify({'error': 'User not found'}), 404
 
         quiz_response = QuizResponse(user_id=user_id, answers=answers)
         db.session.add(quiz_response)
         db.session.commit()
+        
+        print(f"Debug: Quiz response saved successfully for user_id: {user_id}")
 
-        return jsonify({'message': 'Quiz submitted successfully'})
+        return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
     except Exception as e:
+        print(f"Debug: Error in submit_quiz: {str(e)}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

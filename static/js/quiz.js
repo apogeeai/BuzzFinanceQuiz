@@ -105,12 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 answers: answers.join('')
             }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
-            window.location.href = `/results/${userId}`;
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            window.location.href = `/results/${data.user_id}`;
         })
         .catch((error) => {
             console.error('Error:', error);
+            alert('An error occurred while submitting the quiz. Please try again.');
         });
     }
 
