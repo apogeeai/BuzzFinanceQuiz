@@ -19,3 +19,26 @@ body {
 .social-share-btn:hover {
     transform: translateY(-2px);
 }
+
+/* New gradient button styles */
+.gradient-button {
+    background-image: linear-gradient(90deg, #015efe, #012f7e 40%, #015efe);
+    background-position: 0;
+    background-size: 200%;
+    box-shadow: none;
+    transition: background-position .3s ease-in-out, box-shadow .3s ease-in-out;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.gradient-button:hover {
+    background-position: -100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
