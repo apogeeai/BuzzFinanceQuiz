@@ -2,8 +2,6 @@ import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import func
-from datetime import datetime
 
 class Base(DeclarativeBase):
     pass
@@ -19,20 +17,16 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class QuizResponse(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answers = db.Column(db.Text, nullable=False)
-    result_category = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
-        db.drop_all()  # Drop all existing tables
-        db.create_all()  # Create new tables with updated schema
+        db.create_all()
 
 @app.route('/')
 def index():
@@ -59,22 +53,7 @@ def submit_quiz():
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 4 * len(answers)
-    percentage = (total_score / max_score) * 100
-
-    if percentage < 25:
-        result_category = "The Blissful Butterfly"
-    elif percentage < 50:
-        result_category = "The Curious Cat"
-    elif percentage < 75:
-        result_category = "The Savvy Shark"
-    elif percentage < 90:
-        result_category = "The Wise Whale"
-    else:
-        result_category = "The Busy Bat"
-
-    quiz_response = QuizResponse(user_id=user_id, answers=answers, result_category=result_category)
+    quiz_response = QuizResponse(user_id=user_id, answers=answers)
     db.session.add(quiz_response)
     db.session.commit()
 
@@ -90,71 +69,45 @@ def results(user_id):
     if not quiz_response:
         return redirect(url_for('index'))
 
-    result = quiz_response.result_category
     answers = quiz_response.answers
     total_score = sum(ord(answer) - ord('A') for answer in answers)
     max_score = 4 * len(answers)
     percentage = (total_score / max_score) * 100
 
-    tips = get_tips(result)
-
-    return render_template('results.html', result=result, percentage=percentage, tips=tips)
-
-def get_tips(result_category):
-    tips = {
-        "The Blissful Butterfly": [
+    if percentage < 25:
+        result = "Financial Butterfly: You're carefree with money, but it might be time to start thinking about the future!"
+        tips = [
             "Start tracking your expenses to understand your spending habits.",
             "Set up a small emergency fund to cover unexpected costs.",
             "Learn about budgeting basics and try creating a simple budget.",
             "Consider setting up automatic savings to build good financial habits."
-        ],
-        "The Curious Cat": [
+        ]
+    elif percentage < 50:
+        result = "Curious Kitten: You're starting to explore financial responsibility. Keep learning and growing!"
+        tips = [
             "Increase your emergency fund to cover 3-6 months of expenses.",
             "Look into different savings accounts and their interest rates.",
             "Start learning about investing basics and consider low-risk options.",
             "Review your expenses and identify areas where you can cut back."
-        ],
-        "The Savvy Shark": [
+        ]
+    elif percentage < 75:
+        result = "Diligent Beaver: You're on the right track with your finances. Keep up the good work!"
+        tips = [
             "Diversify your investments to spread risk and potentially increase returns.",
             "Consider increasing your retirement contributions if possible.",
             "Look into additional income streams or side hustles.",
             "Start setting long-term financial goals and create plans to achieve them."
-        ],
-        "The Wise Whale": [
+        ]
+    else:
+        result = "Wise Owl: You're a financial guru! Your future is looking bright and secure."
+        tips = [
             "Consider advanced investment strategies or consult with a financial advisor.",
             "Look into estate planning and wealth transfer strategies.",
             "Explore ways to optimize your tax strategy.",
             "Consider philanthropic opportunities or setting up a charitable foundation."
-        ],
-        "The Busy Bat": [
-            "Explore complex investment vehicles like hedge funds or private equity.",
-            "Consider mentoring others on financial management.",
-            "Look into starting your own business or becoming an angel investor.",
-            "Develop a comprehensive wealth preservation and growth strategy."
         ]
-    }
-    return tips.get(result_category, [])
 
-@app.route('/admin')
-def admin_dashboard():
-    total_users = User.query.count()
-    total_quizzes = QuizResponse.query.count()
-    
-    category_counts = db.session.query(
-        QuizResponse.result_category,
-        func.count(QuizResponse.id).label('count')
-    ).group_by(QuizResponse.result_category).all()
-
-    category_data = {category: count for category, count in category_counts}
-
-    daily_stats = db.session.query(
-        func.date(QuizResponse.created_at).label('date'),
-        func.count('*').label('count')
-    ).group_by(func.date(QuizResponse.created_at)).order_by(func.date(QuizResponse.created_at)).all()
-
-    daily_data = {str(date): count for date, count in daily_stats}
-
-    return render_template('admin.html', total_users=total_users, total_quizzes=total_quizzes, category_data=category_data, daily_data=daily_data)
+    return render_template('results.html', result=result, percentage=percentage, tips=tips)
 
 if __name__ == '__main__':
     create_tables()
