@@ -41,7 +41,7 @@ def quiz():
         db.session.add(user)
         db.session.commit()
         return render_template('quiz.html', user_id=user.id)
-    return render_template('quiz.html')  # Changed this line to render quiz.html for GET requests
+    return render_template('quiz.html')
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
@@ -75,15 +75,43 @@ def results(user_id):
     percentage = (total_score / max_score) * 100
 
     if percentage < 25:
-        result = "Financial Butterfly: You're carefree with money, but it might be time to start thinking about the future!"
+        result = "Financial Butterfly"
+        profile = "You're carefree with money, but it might be time to start thinking about the future!"
+        tips = [
+            "Start tracking your expenses to understand your spending habits.",
+            "Set up a small emergency fund to cover unexpected costs.",
+            "Consider automating your savings, even if it's a small amount each month.",
+            "Learn about budgeting basics to gain more control over your finances."
+        ]
     elif percentage < 50:
-        result = "Curious Kitten: You're starting to explore financial responsibility. Keep learning and growing!"
+        result = "Curious Kitten"
+        profile = "You're starting to explore financial responsibility. Keep learning and growing!"
+        tips = [
+            "Increase your emergency fund to cover 3-6 months of expenses.",
+            "Start paying off any high-interest debt, like credit cards.",
+            "Look into retirement savings options, such as a 401(k) or IRA.",
+            "Set specific financial goals and create a plan to achieve them."
+        ]
     elif percentage < 75:
-        result = "Diligent Beaver: You're on the right track with your finances. Keep up the good work!"
+        result = "Diligent Beaver"
+        profile = "You're on the right track with your finances. Keep up the good work!"
+        tips = [
+            "Diversify your investments to spread risk and potentially increase returns.",
+            "Consider increasing your retirement contributions if possible.",
+            "Review and optimize your insurance coverage.",
+            "Start planning for major life events, like buying a home or starting a family."
+        ]
     else:
-        result = "Wise Owl: You're a financial guru! Your future is looking bright and secure."
+        result = "Wise Owl"
+        profile = "You're a financial guru! Your future is looking bright and secure."
+        tips = [
+            "Consider advanced investment strategies or seek professional advice for optimization.",
+            "Look into tax-efficient investment and withdrawal strategies.",
+            "Plan for legacy and estate management.",
+            "Explore ways to give back through charitable giving or mentoring others in financial literacy."
+        ]
 
-    return render_template('results.html', result=result, percentage=percentage)
+    return render_template('results.html', result=result, profile=profile, tips=tips, percentage=percentage)
 
 if __name__ == '__main__':
     create_tables()

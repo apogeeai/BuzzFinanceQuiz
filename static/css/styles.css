@@ -52,3 +52,7 @@ body {
     background-position: -100%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+body, p, div, span, a, button, input, textarea, select {
+    font-family: karla, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
