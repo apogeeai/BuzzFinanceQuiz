@@ -85,6 +85,7 @@ def submit_quiz():
             logging.error("Invalid number of answers")
             return jsonify({'error': 'Invalid number of answers'}), 400
 
+        logging.debug(f"Querying User with ID: {user_id}")
         user = User.query.get(user_id)
         if not user:
             logging.error(f"User not found for ID: {user_id}")
