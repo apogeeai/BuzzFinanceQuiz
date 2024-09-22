@@ -1,7 +1,8 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from functools import wraps
 
 class Base(DeclarativeBase):
     pass
@@ -11,6 +12,7 @@ db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
 db.init_app(app)
 
 class User(db.Model):
@@ -33,6 +35,14 @@ def create_tables():
         inspector = db.inspect(db.engine)
         if 'result_category' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
             db.engine.execute('ALTER TABLE quiz_response ADD COLUMN result_category VARCHAR(50)')
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin_logged_in' not in session or not session['admin_logged_in']:
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def index():
@@ -140,6 +150,38 @@ def get_tips_for_category(category):
         ]
     }
     return tips.get(category, [])
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == 'admin' and password == 'secret':  # Replace with secure authentication
+            session['admin_logged_in'] = True
+            return redirect(url_for('admin_dashboard'))
+        else:
+            return render_template('admin_login.html', error='Invalid credentials')
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    return redirect(url_for('index'))
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    total_users = User.query.count()
+    total_quizzes = QuizResponse.query.count()
+    category_distribution = db.session.query(
+        QuizResponse.result_category,
+        db.func.count(QuizResponse.id)
+    ).group_by(QuizResponse.result_category).all()
+    
+    return render_template('admin_dashboard.html',
+                           total_users=total_users,
+                           total_quizzes=total_quizzes,
+                           category_distribution=category_distribution)
 
 if __name__ == '__main__':
     create_tables()
