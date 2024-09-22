@@ -19,14 +19,20 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
 
 class QuizResponse(db.Model):
+    __tablename__ = 'quiz_response'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answers = db.Column(db.Text, nullable=False)
+    result_category = db.Column(db.String(50), nullable=True)
     user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
         db.create_all()
+        # Check if the result_category column exists, if not, add it
+        inspector = db.inspect(db.engine)
+        if 'result_category' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
+            db.engine.execute('ALTER TABLE quiz_response ADD COLUMN result_category VARCHAR(50)')
 
 @app.route('/')
 def index():
@@ -43,6 +49,20 @@ def quiz():
         return render_template('quiz.html', user_id=user.id)
     return render_template('quiz.html')
 
+def calculate_result_category(answers):
+    total_score = sum(ord(answer) - ord('A') for answer in answers)
+    max_score = 4 * len(answers)
+    percentage = (total_score / max_score) * 100
+    
+    if percentage < 25:
+        return "Financial Butterfly"
+    elif percentage < 50:
+        return "Curious Kitten"
+    elif percentage < 75:
+        return "Diligent Beaver"
+    else:
+        return "Wise Owl"
+
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
     try:
@@ -58,6 +78,7 @@ def submit_quiz():
             return jsonify({'error': 'User not found'}), 404
 
         quiz_response = QuizResponse(user_id=user_id, answers=answers)
+        quiz_response.result_category = calculate_result_category(answers)
         db.session.add(quiz_response)
         db.session.commit()
         
@@ -86,40 +107,39 @@ def results(user_id):
     max_score = 4 * len(answers)
     percentage = (total_score / max_score) * 100
 
-    if percentage < 25:
-        result = "Financial Butterfly: You're carefree with money, but it might be time to start thinking about the future!"
-        tips = [
+    result = quiz_response.result_category
+    tips = get_tips_for_category(result)
+
+    return render_template('results.html', result=result, percentage=percentage, tips=tips)
+
+def get_tips_for_category(category):
+    tips = {
+        "Financial Butterfly": [
             "Start tracking your expenses to understand your spending habits.",
             "Set up a small emergency fund to cover unexpected costs.",
             "Learn about budgeting basics and try creating a simple budget.",
             "Consider setting up automatic savings to build good financial habits."
-        ]
-    elif percentage < 50:
-        result = "Curious Kitten: You're starting to explore financial responsibility. Keep learning and growing!"
-        tips = [
+        ],
+        "Curious Kitten": [
             "Increase your emergency fund to cover 3-6 months of expenses.",
             "Look into different savings accounts and their interest rates.",
             "Start learning about investing basics and consider low-risk options.",
             "Review your expenses and identify areas where you can cut back."
-        ]
-    elif percentage < 75:
-        result = "Diligent Beaver: You're on the right track with your finances. Keep up the good work!"
-        tips = [
+        ],
+        "Diligent Beaver": [
             "Diversify your investments to spread risk and potentially increase returns.",
             "Consider increasing your retirement contributions if possible.",
             "Look into additional income streams or side hustles.",
             "Start setting long-term financial goals and create plans to achieve them."
-        ]
-    else:
-        result = "Wise Owl: You're a financial guru! Your future is looking bright and secure."
-        tips = [
+        ],
+        "Wise Owl": [
             "Consider advanced investment strategies or consult with a financial advisor.",
             "Look into estate planning and wealth transfer strategies.",
             "Explore ways to optimize your tax strategy.",
             "Consider philanthropic opportunities or setting up a charitable foundation."
         ]
-
-    return render_template('results.html', result=result, percentage=percentage, tips=tips)
+    }
+    return tips.get(category, [])
 
 if __name__ == '__main__':
     create_tables()
