@@ -37,10 +37,20 @@ def quiz():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        user = User(name=name, email=email)
-        db.session.add(user)
-        db.session.commit()
-        return render_template('quiz.html', user_id=user.id)
+        try:
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                user_id = existing_user.id
+            else:
+                user = User(name=name, email=email)
+                db.session.add(user)
+                db.session.commit()
+                user_id = user.id
+            return render_template('quiz.html', user_id=user_id)
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error occurred: {str(e)}")
+            return render_template('index.html', error="An error occurred. Please try again.")
     return render_template('quiz.html')
 
 @app.route('/submit_quiz', methods=['POST'])
