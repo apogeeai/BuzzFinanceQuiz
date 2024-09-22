@@ -52,18 +52,3 @@ body {
     background-position: -100%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
-body, p, div, span, a, button, input, textarea, select {
-    font-family: karla, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-    color: #373e4e;
-    font-size: 1.1rem;  /* Updated from 1rem to 1.1rem as per manager's request */
-}
-
-.text-blue-600 {
-    font-family: amsi, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-}
-
-/* New style for the result text */
-.text-2xl.font-semibold.mb-2.text-center.text-blue-500 {
-    color: #f36814;
-}

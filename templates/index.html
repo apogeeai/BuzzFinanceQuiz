@@ -3,9 +3,6 @@
 {% block content %}
 <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Financial Health Quiz</h1>
 <p class="mb-4 text-center">Discover your financial spirit animal!</p>
-{% if error %}
-<p class="mb-4 text-center text-red-600">{{ error }}</p>
-{% endif %}
 <form action="{{ url_for('quiz') }}" method="post" class="space-y-4">
     <div>
         <label for="name" class="block mb-2 font-semibold">Name:</label>
