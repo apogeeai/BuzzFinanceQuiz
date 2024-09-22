@@ -17,15 +17,15 @@
 </ul>
 
 <!-- Social Share Buttons -->
-<p class="text-center mb-2">Share your results:</p>
+<p class="text-center mb-2">Share on:</p>
 <div class="flex justify-center space-x-4 mb-6">
-    <a href="https://twitter.com/intent/tweet?text=I%20just%20took%20the%20Financial%20Health%20Quiz%20and%20scored%20{{ percentage|round|int }}%25!%20Check%20it%20out!" target="_blank" class="social-icon-btn">
+    <a href="https://twitter.com/intent/tweet?text=I%20just%20took%20the%20Financial%20Health%20Quiz!%20Check%20it%20out!" target="_blank" class="social-icon-btn">
         <i class="fab fa-twitter"></i>
     </a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" target="_blank" class="social-icon-btn">
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="social-icon-btn">
         <i class="fab fa-facebook-f"></i>
     </a>
-    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url|urlencode }}&title=Financial%20Health%20Quiz&summary=I%20just%20took%20the%20Financial%20Health%20Quiz%20and%20scored%20{{ percentage|round|int }}%25!" target="_blank" class="social-icon-btn">
+    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title=Financial%20Health%20Quiz&summary=I%20just%20took%20the%20Financial%20Health%20Quiz!" target="_blank" class="social-icon-btn">
         <i class="fab fa-linkedin-in"></i>
     </a>
 </div>

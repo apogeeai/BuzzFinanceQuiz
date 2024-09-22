@@ -21,46 +21,23 @@ body {
     background-color: #a6c8ff;
 }
 
-/* Styles for social share buttons */
+/* New styles for social share buttons */
 .social-icon-btn {
-    width: 40px !important;
-    height: 40px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 50% !important;
-    font-size: 18px !important;
-    transition: all 0.3s ease !important;
-    text-decoration: none !important;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    font-size: 24px;
+    color: #333;
+    transition: all 0.3s ease;
 }
 
 .social-icon-btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.social-icon-btn .fab.fa-twitter {
-    color: #ffffff !important;
-}
-
-.social-icon-btn .fab.fa-facebook-f {
-    color: #ffffff !important;
-}
-
-.social-icon-btn .fab.fa-linkedin-in {
-    color: #ffffff !important;
-}
-
-.social-icon-btn[href*="twitter.com"] {
-    background-color: #1DA1F2 !important;
-}
-
-.social-icon-btn[href*="facebook.com"] {
-    background-color: #4267B2 !important;
-}
-
-.social-icon-btn[href*="linkedin.com"] {
-    background-color: #0077B5 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Gradient button styles */

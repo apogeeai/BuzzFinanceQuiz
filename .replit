@@ -1,4 +1,4 @@
-modules = ["python-3.11", "nodejs-20"]
+modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
@@ -13,18 +13,14 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask Server"
+args = "Start Flask App"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "run"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Git Setup"
-
 [[workflows.workflow]]
-name = "Flask Server"
+name = "Start Flask App"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -33,7 +29,7 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python app.py"
-waitForPort = 8080
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "run"
@@ -46,43 +42,9 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "python app.py"
 
-[[workflows.workflow]]
-name = "Git Setup"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = """
-
-git init
-git add .
-git commit -m \"Initial commit: Financial Health Quiz prototype\"
-echo \"__pycache__
-.env
-.replit
-.upm
-.pythonlibs
-.local
-.cache\" > .gitignore
-git add .gitignore
-git commit -m \"Add .gitignore file\"
-echo \"Git repository initialized and initial commit made.\"
-echo \"To connect to a GitHub repository, run these commands:\"
-echo \"git remote add origin https://github.com/yourusername/your-repo-name.git\"
-echo \"git branch -M main\"
-echo \"git push -u origin main\"
-"""
-
 [deployment]
 run = ["sh", "-c", "python app.py"]
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
