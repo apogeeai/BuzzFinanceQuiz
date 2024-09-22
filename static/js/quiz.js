@@ -46,10 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             question: "Choose the animal that best represents your financial style:",
             options: [
-                "A carefree butterfly",
-                "A curious kitten",
-                "A diligent beaver",
-                "A wise owl"
+                "A blissful butterfly",
+                "A curious cat",
+                "A busy beaver",
+                "A diligent dolphin"
             ]
         }
     ];
