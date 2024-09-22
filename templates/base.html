@@ -16,9 +16,27 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-r from-blue-500 to-orange-500 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        {% block content %}{% endblock %}
+<body class="bg-gradient-to-r from-blue-500 to-orange-500 min-h-screen flex flex-col">
+    <nav class="bg-white shadow-lg mb-8">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between">
+                <div class="flex space-x-7">
+                    <div>
+                        <a href="{{ url_for('index') }}" class="flex items-center py-4 px-2">
+                            <span class="font-semibold text-gray-500 text-lg">Financial Health Quiz</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('admin_dashboard') }}" class="py-2 px-2 font-medium text-gray-500 rounded hover:bg-blue-500 hover:text-white transition duration-300">Admin Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto px-4 flex-grow">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto">
+            {% block content %}{% endblock %}
+        </div>
     </div>
     <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
 </body>
