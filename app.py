@@ -4,28 +4,16 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import func
 from datetime import datetime
-from flask_mail import Mail, Message
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
-mail = Mail()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Email configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
-
 db.init_app(app)
-mail.init_app(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,9 +78,6 @@ def submit_quiz():
     db.session.add(quiz_response)
     db.session.commit()
 
-    # Send email notification with financial tips
-    send_email_notification(user, result_category)
-
     return jsonify({'message': 'Quiz submitted successfully'})
 
 @app.route('/results/<int:user_id>')
@@ -149,29 +134,6 @@ def get_tips(result_category):
         ]
     }
     return tips.get(result_category, [])
-
-def send_email_notification(user, result_category):
-    subject = "Your Financial Health Quiz Results"
-    tips = get_tips(result_category)
-    body = f"""
-    Hello {user.name},
-
-    Thank you for taking our Financial Health Quiz! Based on your responses, your financial personality is:
-
-    {result_category}
-
-    Here are some personalized financial tips for you:
-
-    {' '.join(['- ' + tip for tip in tips])}
-
-    We hope these tips help you on your journey to better financial health. If you have any questions or would like more information, please don't hesitate to reach out.
-
-    Best regards,
-    The Financial Health Quiz Team
-    """
-
-    msg = Message(subject=subject, recipients=[user.email], body=body)
-    mail.send(msg)
 
 @app.route('/admin')
 def admin_dashboard():
