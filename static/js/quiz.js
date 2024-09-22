@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentQuestion = 0;
     const answers = [];
+    const quizResponseId = quizContainer.dataset.quizResponseId;
 
     function displayQuestion() {
         const question = questions[currentQuestion];
@@ -94,20 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function submitQuiz() {
-        const userId = quizContainer.dataset.userId;
         fetch('/submit_quiz', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: userId,
+                quiz_response_id: quizResponseId,
                 answers: answers.join('')
             }),
         })
         .then(response => response.json())
         .then(data => {
-            window.location.href = `/results/${userId}`;
+            window.location.href = `/results/${quizResponseId}`;
         })
         .catch((error) => {
             console.error('Error:', error);

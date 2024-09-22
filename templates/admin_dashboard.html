@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-blue-600">Admin Dashboard</h1>
+    <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Quiz Statistics</h2>
+        <p>Total Users: {{ total_users }}</p>
+        <p>Total Quizzes Taken: {{ total_quizzes }}</p>
+        <p>Average Score: {{ avg_percentage|round(2) }}%</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Result Distribution</h2>
+        <ul>
+            {% for result, count in result_distribution.items() %}
+            <li>{{ result }}: {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="mt-8">
+    <h2 class="text-2xl font-semibold mb-4">Recent Quiz Responses</h2>
+    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 text-left">User</th>
+                <th class="py-2 px-4 text-left">Email</th>
+                <th class="py-2 px-4 text-left">Score</th>
+                <th class="py-2 px-4 text-left">Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for response in recent_responses %}
+            <tr>
+                <td class="py-2 px-4">{{ response.user.name }}</td>
+                <td class="py-2 px-4">{{ response.user.email }}</td>
+                <td class="py-2 px-4">{{ response.score }}%</td>
+                <td class="py-2 px-4">{{ response.result }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
