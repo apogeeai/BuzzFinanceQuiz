@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 class Base(DeclarativeBase):
     pass
@@ -20,4 +21,13 @@ class QuizResponse(db.Model):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     answers = Column(Text, nullable=False)
+    score = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship('User', back_populates='quiz_responses')
+
+class QuizStatistics(db.Model):
+    __tablename__ = 'quiz_statistics'
+    id = Column(Integer, primary_key=True)
+    total_quizzes = Column(Integer, default=0)
+    average_score = Column(Float, default=0.0)
+    last_updated = Column(DateTime, default=datetime.utcnow)
