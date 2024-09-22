@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         question.options.forEach((option, index) => {
             const button = document.createElement('button');
             button.textContent = option;
-            button.classList.add('w-full', 'text-left', 'p-2', 'border', 'rounded-md', 'hover:bg-purple-100', 'transition', 'duration-300');
+            button.classList.add('w-full', 'text-left', 'p-2', 'border', 'rounded-md', 'hover:bg-blue-100', 'transition', 'duration-300');
             button.addEventListener('click', () => selectOption(index));
             optionsContainer.appendChild(button);
         });
@@ -79,9 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const buttons = optionsContainer.getElementsByTagName('button');
         for (let i = 0; i < buttons.length; i++) {
-            buttons[i].classList.remove('bg-purple-200');
+            buttons[i].classList.remove('bg-blue-200');
         }
-        buttons[index].classList.add('bg-purple-200');
+        buttons[index].classList.add('bg-blue-200');
     }
 
     nextBtn.addEventListener('click', () => {

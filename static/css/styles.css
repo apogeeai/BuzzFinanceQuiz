@@ -4,9 +4,18 @@ body {
 }
 
 .quiz-option:hover {
-    background-color: #f3e8ff;
+    background-color: #e6f2ff;
 }
 
 .quiz-option.selected {
-    background-color: #d8b4fe;
+    background-color: #a6c8ff;
+}
+
+/* New styles for social share buttons */
+.social-share-btn {
+    transition: all 0.3s ease;
+}
+
+.social-share-btn:hover {
+    transform: translateY(-2px);
 }
