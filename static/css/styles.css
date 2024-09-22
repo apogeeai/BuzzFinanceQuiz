@@ -62,3 +62,8 @@ body, p, div, span, a, button, input, textarea, select {
 .text-blue-600 {
     font-family: amsi, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
+
+/* New style for the result text */
+.text-2xl.font-semibold.mb-2.text-center.text-blue-500 {
+    color: #f36814;
+}

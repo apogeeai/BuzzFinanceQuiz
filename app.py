@@ -120,46 +120,54 @@ def get_personalized_tips(quiz_response, financial_type):
     tips = []
     
     # Tip based on paycheck reaction (Q1)
-    if quiz_response.q1_answer in ['A', 'B']:
-        tips.append("Consider creating a budget to better manage your income and expenses.")
+    if quiz_response.q1_answer == 'A':
+        tips.append("Start by setting aside 10% of your paycheck for savings before spending on non-essentials.")
+    elif quiz_response.q1_answer == 'B':
+        tips.append("Create a detailed budget to understand where your money is going and identify areas to cut back.")
     elif quiz_response.q1_answer == 'C':
-        tips.append("Great job saving! Try to increase your savings rate by 1% each month.")
+        tips.append("Great job saving! Consider automating your savings to make it even easier.")
     else:
-        tips.append("Your saving habits are excellent. Consider exploring investment options for long-term growth.")
+        tips.append("Your saving habits are excellent. Look into high-yield savings accounts or investment options for better returns.")
 
     # Tip based on wallet status (Q2)
-    if quiz_response.q2_answer in ['A', 'B']:
-        tips.append("Start building an emergency fund to cover 3-6 months of expenses.")
+    if quiz_response.q2_answer == 'A':
+        tips.append("Start building an emergency fund with small, regular contributions. Aim for $1,000 initially.")
+    elif quiz_response.q2_answer == 'B':
+        tips.append("Increase your emergency fund to cover 3-6 months of expenses. Consider a side hustle for extra income.")
     elif quiz_response.q2_answer == 'C':
-        tips.append("Your finances are stable. Consider setting specific financial goals for the future.")
+        tips.append("You're on the right track. Set specific financial goals, like saving for a down payment or a dream vacation.")
     else:
-        tips.append("You're doing great! Look into ways to optimize your tax strategy.")
+        tips.append("Great job managing your finances! Consider diversifying your investments or exploring tax-advantaged accounts.")
 
     # Tip based on budgeting habits (Q3)
-    if quiz_response.q3_answer in ['A', 'B']:
-        tips.append("Start tracking your expenses and create a simple budget using the 50/30/20 rule.")
+    if quiz_response.q3_answer == 'A':
+        tips.append("Start with a simple budget using the 50/30/20 rule: 50% for needs, 30% for wants, and 20% for savings and debt repayment.")
+    elif quiz_response.q3_answer == 'B':
+        tips.append("Try using a budgeting app to track your expenses and stick to your budget more easily.")
     elif quiz_response.q3_answer == 'C':
-        tips.append("Refine your budget by categorizing expenses and identifying areas for potential savings.")
+        tips.append("Look for ways to optimize your budget further, such as negotiating bills or finding cheaper alternatives for regular expenses.")
     else:
-        tips.append("Your budgeting skills are top-notch. Consider using advanced budgeting tools or apps.")
+        tips.append("Your budgeting skills are top-notch. Consider helping others by sharing your budgeting tips or volunteering for financial literacy programs.")
 
     # Tip based on retirement planning (Q4)
-    if quiz_response.q4_answer in ['A', 'B']:
-        tips.append("Start learning about retirement savings options like 401(k)s and IRAs.")
+    if quiz_response.q4_answer == 'A':
+        tips.append("Start learning about retirement savings options. Even small contributions to a 401(k) or IRA can grow significantly over time.")
+    elif quiz_response.q4_answer == 'B':
+        tips.append("If your employer offers a 401(k) match, try to contribute enough to get the full match - it's free money!")
     elif quiz_response.q4_answer == 'C':
-        tips.append("Increase your retirement contributions and diversify your retirement portfolio.")
+        tips.append("Consider increasing your retirement contributions by 1% each year. Look into diversifying your retirement portfolio.")
     else:
-        tips.append("Your retirement planning is solid. Consider estate planning and long-term care insurance.")
+        tips.append("You're well-prepared for retirement. Consider estate planning and long-term care insurance to protect your assets.")
 
     # Tip based on financial style (Q5)
     if financial_type == "Butterfly":
-        tips.append("Start small: set a goal to save a specific amount each week and stick to it.")
+        tips.append("Challenge yourself to a 'no-spend week' each month to boost your savings and become more mindful of your spending habits.")
     elif financial_type == "Kitten":
-        tips.append("Educate yourself: read personal finance books or take an online course to improve your financial literacy.")
+        tips.append("Set a specific financial goal for the next 3 months, like saving a certain amount or paying off a specific debt. Track your progress weekly.")
     elif financial_type == "Beaver":
-        tips.append("Keep building: consider exploring passive income streams to supplement your earnings.")
+        tips.append("Consider exploring passive income streams, such as dividend-paying stocks or rental properties, to supplement your earnings.")
     else:  # Owl
-        tips.append("Share your knowledge: consider mentoring others or starting a financial blog to help others learn from your experience.")
+        tips.append("Share your financial wisdom by mentoring others or starting a blog. Teaching others can also reinforce good financial habits for yourself.")
 
     return tips
 
