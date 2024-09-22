@@ -1,0 +1,12 @@
+/* Additional custom styles can be added here if needed */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.quiz-option:hover {
+    background-color: #f3e8ff;
+}
+
+.quiz-option.selected {
+    background-color: #d8b4fe;
+}

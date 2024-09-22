@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6 text-center text-purple-600">Your Results</h1>
+<p class="mb-4 text-center text-lg">{{ result }}</p>
+<div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
+    <div class="bg-purple-600 h-2.5 rounded-full" style="width: {{ percentage }}%"></div>
+</div>
+<p class="text-center">Your financial health score: {{ percentage|round|int }}%</p>
+<a href="{{ url_for('index') }}" class="block mt-6 text-center text-purple-600 hover:underline">Take the quiz again</a>
+{% endblock %}
