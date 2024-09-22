@@ -22,6 +22,11 @@ class QuizResponse(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answers = db.Column(db.Text, nullable=False)
+    q1_answer = db.Column(db.String(1), nullable=False)
+    q2_answer = db.Column(db.String(1), nullable=False)
+    q3_answer = db.Column(db.String(1), nullable=False)
+    q4_answer = db.Column(db.String(1), nullable=False)
+    q5_answer = db.Column(db.String(1), nullable=False)
     user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
@@ -63,7 +68,15 @@ def submit_quiz():
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    quiz_response = QuizResponse(user_id=user_id, answers=answers)
+    quiz_response = QuizResponse(
+        user_id=user_id,
+        answers=answers,
+        q1_answer=answers[0],
+        q2_answer=answers[1],
+        q3_answer=answers[2],
+        q4_answer=answers[3],
+        q5_answer=answers[4]
+    )
     db.session.add(quiz_response)
     db.session.commit()
 
@@ -87,41 +100,68 @@ def results(user_id):
     if percentage < 25:
         result = "Financial Butterfly"
         profile = "You're carefree with money, but it might be time to start thinking about the future!"
-        tips = [
-            "Start tracking your expenses to understand your spending habits.",
-            "Set up a small emergency fund to cover unexpected costs.",
-            "Consider automating your savings, even if it's a small amount each month.",
-            "Learn about budgeting basics to gain more control over your finances."
-        ]
+        tips = get_personalized_tips(quiz_response, "Butterfly")
     elif percentage < 50:
         result = "Curious Kitten"
         profile = "You're starting to explore financial responsibility. Keep learning and growing!"
-        tips = [
-            "Increase your emergency fund to cover 3-6 months of expenses.",
-            "Start paying off any high-interest debt, like credit cards.",
-            "Look into retirement savings options, such as a 401(k) or IRA.",
-            "Set specific financial goals and create a plan to achieve them."
-        ]
+        tips = get_personalized_tips(quiz_response, "Kitten")
     elif percentage < 75:
         result = "Diligent Beaver"
         profile = "You're on the right track with your finances. Keep up the good work!"
-        tips = [
-            "Diversify your investments to spread risk and potentially increase returns.",
-            "Consider increasing your retirement contributions if possible.",
-            "Review and optimize your insurance coverage.",
-            "Start planning for major life events, like buying a home or starting a family."
-        ]
+        tips = get_personalized_tips(quiz_response, "Beaver")
     else:
         result = "Wise Owl"
         profile = "You're a financial guru! Your future is looking bright and secure."
-        tips = [
-            "Consider advanced investment strategies or seek professional advice for optimization.",
-            "Look into tax-efficient investment and withdrawal strategies.",
-            "Plan for legacy and estate management.",
-            "Explore ways to give back through charitable giving or mentoring others in financial literacy."
-        ]
+        tips = get_personalized_tips(quiz_response, "Owl")
 
     return render_template('results.html', result=result, profile=profile, tips=tips, percentage=percentage)
+
+def get_personalized_tips(quiz_response, financial_type):
+    tips = []
+    
+    # Tip based on paycheck reaction (Q1)
+    if quiz_response.q1_answer in ['A', 'B']:
+        tips.append("Consider creating a budget to better manage your income and expenses.")
+    elif quiz_response.q1_answer == 'C':
+        tips.append("Great job saving! Try to increase your savings rate by 1% each month.")
+    else:
+        tips.append("Your saving habits are excellent. Consider exploring investment options for long-term growth.")
+
+    # Tip based on wallet status (Q2)
+    if quiz_response.q2_answer in ['A', 'B']:
+        tips.append("Start building an emergency fund to cover 3-6 months of expenses.")
+    elif quiz_response.q2_answer == 'C':
+        tips.append("Your finances are stable. Consider setting specific financial goals for the future.")
+    else:
+        tips.append("You're doing great! Look into ways to optimize your tax strategy.")
+
+    # Tip based on budgeting habits (Q3)
+    if quiz_response.q3_answer in ['A', 'B']:
+        tips.append("Start tracking your expenses and create a simple budget using the 50/30/20 rule.")
+    elif quiz_response.q3_answer == 'C':
+        tips.append("Refine your budget by categorizing expenses and identifying areas for potential savings.")
+    else:
+        tips.append("Your budgeting skills are top-notch. Consider using advanced budgeting tools or apps.")
+
+    # Tip based on retirement planning (Q4)
+    if quiz_response.q4_answer in ['A', 'B']:
+        tips.append("Start learning about retirement savings options like 401(k)s and IRAs.")
+    elif quiz_response.q4_answer == 'C':
+        tips.append("Increase your retirement contributions and diversify your retirement portfolio.")
+    else:
+        tips.append("Your retirement planning is solid. Consider estate planning and long-term care insurance.")
+
+    # Tip based on financial style (Q5)
+    if financial_type == "Butterfly":
+        tips.append("Start small: set a goal to save a specific amount each week and stick to it.")
+    elif financial_type == "Kitten":
+        tips.append("Educate yourself: read personal finance books or take an online course to improve your financial literacy.")
+    elif financial_type == "Beaver":
+        tips.append("Keep building: consider exploring passive income streams to supplement your earnings.")
+    else:  # Owl
+        tips.append("Share your knowledge: consider mentoring others or starting a financial blog to help others learn from your experience.")
+
+    return tips
 
 if __name__ == '__main__':
     create_tables()

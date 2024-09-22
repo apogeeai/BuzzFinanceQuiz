@@ -55,8 +55,8 @@ body {
 
 body, p, div, span, a, button, input, textarea, select {
     font-family: karla, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen-Sans', Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-    color: #606776;
-    font-size: 1rem;  /* Changed from 2rem to 1rem as per manager's instructions */
+    color: #373e4e;  /* Updated from #606776 to #373e4e as per manager's request */
+    font-size: 1rem;
 }
 
 .text-blue-600 {
