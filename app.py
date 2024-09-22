@@ -1,12 +1,28 @@
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-from models import db, User, QuizResponse, QuizStatistics
-from sqlalchemy import func
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+
+class Base(DeclarativeBase):
+    pass
+
+db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+class QuizResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    answers = db.Column(db.Text, nullable=False)
+    user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
@@ -37,20 +53,8 @@ def submit_quiz():
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    score = sum(ord(answer) - ord('A') for answer in answers)
-    quiz_response = QuizResponse(user_id=user_id, answers=answers, score=score)
+    quiz_response = QuizResponse(user_id=user_id, answers=answers)
     db.session.add(quiz_response)
-
-    # Update quiz statistics
-    stats = QuizStatistics.query.first()
-    if not stats:
-        stats = QuizStatistics()
-        db.session.add(stats)
-    
-    stats.total_quizzes += 1
-    stats.average_score = ((stats.average_score * (stats.total_quizzes - 1)) + score) / stats.total_quizzes
-    stats.last_updated = datetime.utcnow()
-
     db.session.commit()
 
     return jsonify({'message': 'Quiz submitted successfully'})
@@ -66,7 +70,7 @@ def results(user_id):
         return redirect(url_for('index'))
 
     answers = quiz_response.answers
-    total_score = quiz_response.score
+    total_score = sum(ord(answer) - ord('A') for answer in answers)
     max_score = 4 * len(answers)
     percentage = (total_score / max_score) * 100
 
@@ -104,18 +108,6 @@ def results(user_id):
         ]
 
     return render_template('results.html', result=result, percentage=percentage, tips=tips)
-
-@app.route('/admin')
-def admin_dashboard():
-    stats = QuizStatistics.query.first()
-    if not stats:
-        stats = QuizStatistics()
-        db.session.add(stats)
-        db.session.commit()
-
-    recent_quizzes = QuizResponse.query.order_by(QuizResponse.created_at.desc()).limit(10).all()
-    
-    return render_template('admin_dashboard.html', stats=stats, recent_quizzes=recent_quizzes)
 
 if __name__ == '__main__':
     create_tables()
