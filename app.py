@@ -62,9 +62,18 @@ def quiz():
 def submit_quiz():
     try:
         data = request.json
+        if not data:
+            return jsonify({'error': 'No JSON data received'}), 400
+
         user_id = data.get('user_id')
         answers = data.get('answers')
-        
+
+        if not user_id or not answers:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        if len(answers) != 5:
+            return jsonify({'error': 'Invalid number of answers'}), 400
+
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -93,7 +102,7 @@ def results(user_id):
     if not user:
         return redirect(url_for('index'))
 
-    quiz_response = QuizResponse.query.filter_by(user_id=user_id).first()
+    quiz_response = QuizResponse.query.filter_by(user_id=user_id).order_by(QuizResponse.id.desc()).first()
     if not quiz_response:
         return redirect(url_for('index'))
 
