@@ -1,7 +1,10 @@
 import os
+import logging
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+
+logging.basicConfig(level=logging.DEBUG)
 
 class Base(DeclarativeBase):
     pass
@@ -54,30 +57,40 @@ def quiz():
             return render_template('quiz.html', user_id=user_id)
         except Exception as e:
             db.session.rollback()
-            print(f"Error occurred: {str(e)}")
+            logging.error(f"Error occurred: {str(e)}", exc_info=True)
             return render_template('index.html', error="An error occurred. Please try again.")
     return render_template('quiz.html')
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
     try:
+        logging.debug("Received quiz submission request")
         data = request.json
+        logging.debug(f"Received data: {data}")
+
         if not data:
+            logging.error("No JSON data received")
             return jsonify({'error': 'No JSON data received'}), 400
 
         user_id = data.get('user_id')
         answers = data.get('answers')
 
+        logging.debug(f"User ID: {user_id}, Answers: {answers}")
+
         if not user_id or not answers:
+            logging.error("Missing required fields")
             return jsonify({'error': 'Missing required fields'}), 400
 
         if len(answers) != 5:
+            logging.error("Invalid number of answers")
             return jsonify({'error': 'Invalid number of answers'}), 400
 
         user = User.query.get(user_id)
         if not user:
+            logging.error(f"User not found for ID: {user_id}")
             return jsonify({'error': 'User not found'}), 404
 
+        logging.debug("Creating QuizResponse object")
         quiz_response = QuizResponse(
             user_id=user_id,
             answers=answers,
@@ -87,13 +100,18 @@ def submit_quiz():
             q4_answer=answers[3],
             q5_answer=answers[4]
         )
+
+        logging.debug("Adding QuizResponse to session")
         db.session.add(quiz_response)
+
+        logging.debug("Committing session")
         db.session.commit()
 
+        logging.debug("Quiz submitted successfully")
         return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
     except Exception as e:
         db.session.rollback()
-        print(f"Error occurred: {str(e)}")
+        logging.error(f"Error occurred: {str(e)}", exc_info=True)
         return jsonify({'error': 'An error occurred while submitting the quiz'}), 500
 
 @app.route('/results/<int:user_id>')
