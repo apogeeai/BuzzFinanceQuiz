@@ -46,17 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             question: "Choose the animal that best represents your financial style:",
             options: [
-                "A blissful butterfly",
-                "A curious cat",
-                "A busy beaver",
-                "A diligent dolphin"
+                "A carefree butterfly",
+                "A curious kitten",
+                "A diligent beaver",
+                "A wise owl"
             ]
         }
     ];
 
     let currentQuestion = 0;
     const answers = [];
-    const quizResponseId = quizContainer.dataset.quizResponseId;
 
     function displayQuestion() {
         const question = questions[currentQuestion];
@@ -95,19 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function submitQuiz() {
+        const userId = quizContainer.dataset.userId;
         fetch('/submit_quiz', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                quiz_response_id: quizResponseId,
+                user_id: userId,
                 answers: answers.join('')
             }),
         })
         .then(response => response.json())
         .then(data => {
-            window.location.href = `/results/${quizResponseId}`;
+            window.location.href = `/results/${userId}`;
         })
         .catch((error) => {
             console.error('Error:', error);
