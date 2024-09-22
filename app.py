@@ -45,19 +45,23 @@ def quiz():
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
-    data = request.json
-    user_id = data.get('user_id')
-    answers = data.get('answers')
-    
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        answers = data.get('answers')
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
 
-    quiz_response = QuizResponse(user_id=user_id, answers=answers)
-    db.session.add(quiz_response)
-    db.session.commit()
+        quiz_response = QuizResponse(user_id=user_id, answers=answers)
+        db.session.add(quiz_response)
+        db.session.commit()
 
-    return jsonify({'message': 'Quiz submitted successfully'})
+        return jsonify({'message': 'Quiz submitted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/results/<int:user_id>')
 def results(user_id):
