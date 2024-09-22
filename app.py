@@ -41,7 +41,7 @@ def quiz():
         db.session.add(user)
         db.session.commit()
         return render_template('quiz.html', user_id=user.id)
-    return redirect(url_for('index'))
+    return render_template('quiz.html')  # Changed this line to render quiz.html for GET requests
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
