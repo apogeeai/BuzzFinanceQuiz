@@ -98,7 +98,7 @@ def generate_results(total_score, num_questions):
     percentage = (total_score / max_score) * 100
 
     if percentage < 25:
-        result = "Financial Hummingbird: You're quick and energetic with money, but it might be time to slow down and plan for the future!"
+        result = "Financial Butterfly: You're carefree with money, but it might be time to start thinking about the future!"
         tips = [
             "Start tracking your expenses to understand your spending habits.",
             "Set up a small emergency fund to cover unexpected costs.",
@@ -106,7 +106,7 @@ def generate_results(total_score, num_questions):
             "Consider setting up automatic savings to build good financial habits."
         ]
     elif percentage < 50:
-        result = "Money Chameleon: You're adaptable with finances, but it's time to develop a consistent strategy!"
+        result = "Curious Kitten: You're starting to explore financial responsibility. Keep learning and growing!"
         tips = [
             "Increase your emergency fund to cover 3-6 months of expenses.",
             "Look into different savings accounts and their interest rates.",
@@ -114,7 +114,7 @@ def generate_results(total_score, num_questions):
             "Review your expenses and identify areas where you can cut back."
         ]
     elif percentage < 75:
-        result = "Fiscal Fox: You're clever with your money management. Keep refining your financial skills!"
+        result = "Diligent Beaver: You're on the right track with your finances. Keep up the good work!"
         tips = [
             "Diversify your investments to spread risk and potentially increase returns.",
             "Consider increasing your retirement contributions if possible.",
@@ -122,7 +122,7 @@ def generate_results(total_score, num_questions):
             "Start setting long-term financial goals and create plans to achieve them."
         ]
     else:
-        result = "Financial Phoenix: You've mastered money management and are ready to soar to new financial heights!"
+        result = "Wise Owl: You're a financial guru! Your future is looking bright and secure."
         tips = [
             "Consider advanced investment strategies or consult with a financial advisor.",
             "Look into estate planning and wealth transfer strategies.",
