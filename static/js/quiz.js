@@ -107,7 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                return response.text().then(text => {
+                    throw new Error(`Network response was not ok: ${text}`);
+                });
             }
             return response.json();
         })
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch((error) => {
             console.error('Error:', error);
-            alert('An error occurred while submitting the quiz. Please try again.');
+            alert(`An error occurred while submitting the quiz: ${error.message}`);
         });
     }
 

@@ -63,7 +63,9 @@ def submit_quiz():
         
         print(f"Debug: Quiz response saved successfully for user_id: {user_id}")
 
-        return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
+        response = jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
+        print(f"Debug: Returning response: {response.get_data(as_text=True)}")
+        return response
     except Exception as e:
         print(f"Debug: Error in submit_quiz: {str(e)}")
         db.session.rollback()
