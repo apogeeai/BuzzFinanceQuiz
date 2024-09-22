@@ -19,6 +19,10 @@ args = "Start Flask App"
 task = "workflow.run"
 args = "run"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Git Setup"
+
 [[workflows.workflow]]
 name = "Start Flask App"
 author = "agent"
@@ -41,6 +45,36 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python app.py"
+
+[[workflows.workflow]]
+name = "Git Setup"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = """
+
+git init
+git add .
+git commit -m \"Initial commit: Financial Health Quiz prototype\"
+echo \"__pycache__
+.env
+.replit
+.upm
+.pythonlibs
+.local
+.cache\" > .gitignore
+git add .gitignore
+git commit -m \"Add .gitignore file\"
+echo \"Git repository initialized and initial commit made.\"
+echo \"To connect to a GitHub repository, run these commands:\"
+echo \"git remote add origin https://github.com/yourusername/your-repo-name.git\"
+echo \"git branch -M main\"
+echo \"git push -u origin main\"
+"""
 
 [deployment]
 run = ["sh", "-c", "python app.py"]
