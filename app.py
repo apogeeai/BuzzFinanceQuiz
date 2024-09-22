@@ -37,9 +37,20 @@ def quiz():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        user = User(name=name, email=email)
-        db.session.add(user)
-        db.session.commit()
+        
+        # Check if user already exists
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Update the name if it's different
+            if user.name != name:
+                user.name = name
+                db.session.commit()
+        else:
+            # Create new user if not found
+            user = User(name=name, email=email)
+            db.session.add(user)
+            db.session.commit()
+        
         return render_template('quiz.html', user_id=user.id)
     return render_template('quiz.html')
 
