@@ -107,9 +107,6 @@ def results(user_id):
             "Consider philanthropic opportunities or setting up a charitable foundation."
         ]
 
-    print(f"Debug: Tips generated: {tips}")
-    print(f"Debug: Rendering template with tips: {tips}")
-
     return render_template('results.html', result=result, percentage=percentage, tips=tips)
 
 if __name__ == '__main__':

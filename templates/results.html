@@ -8,18 +8,6 @@
 </div>
 <p class="text-center mb-6">Your financial health score: {{ percentage|round|int }}%</p>
 
-<!-- Debug section -->
-{% if tips %}
-  <p>Debug: Tips available</p>
-  <ul>
-  {% for tip in tips %}
-    <li>{{ tip }}</li>
-  {% endfor %}
-  </ul>
-{% else %}
-  <p>Debug: No tips available</p>
-{% endif %}
-
 <!-- Personalized Financial Tips -->
 <h2 class="text-2xl font-semibold mb-4 text-center text-blue-600">Personalized Financial Tips</h2>
 <ul class="list-disc list-inside mb-6">
