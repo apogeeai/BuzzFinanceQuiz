@@ -47,10 +47,10 @@ def quiz():
             if existing_user:
                 user_id = existing_user.id
             else:
-                user = User(name=name, email=email)
-                db.session.add(user)
+                new_user = User(name=name, email=email)
+                db.session.add(new_user)
                 db.session.commit()
-                user_id = user.id
+                user_id = new_user.id
             return render_template('quiz.html', user_id=user_id)
         except Exception as e:
             db.session.rollback()
@@ -60,27 +60,32 @@ def quiz():
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
-    data = request.json
-    user_id = data.get('user_id')
-    answers = data.get('answers')
-    
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        answers = data.get('answers')
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
 
-    quiz_response = QuizResponse(
-        user_id=user_id,
-        answers=answers,
-        q1_answer=answers[0],
-        q2_answer=answers[1],
-        q3_answer=answers[2],
-        q4_answer=answers[3],
-        q5_answer=answers[4]
-    )
-    db.session.add(quiz_response)
-    db.session.commit()
+        quiz_response = QuizResponse(
+            user_id=user_id,
+            answers=answers,
+            q1_answer=answers[0],
+            q2_answer=answers[1],
+            q3_answer=answers[2],
+            q4_answer=answers[3],
+            q5_answer=answers[4]
+        )
+        db.session.add(quiz_response)
+        db.session.commit()
 
-    return jsonify({'message': 'Quiz submitted successfully'})
+        return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error occurred: {str(e)}")
+        return jsonify({'error': 'An error occurred while submitting the quiz'}), 500
 
 @app.route('/results/<int:user_id>')
 def results(user_id):
