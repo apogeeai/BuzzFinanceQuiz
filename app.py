@@ -63,7 +63,7 @@ def calculate_result_category(answers):
     percentage = (total_score / max_score) * 100
     
     if percentage < 25:
-        return "Financial Butterfly"
+        return "Carefree Butterfly"
     elif percentage < 50:
         return "Curious Kitten"
     elif percentage < 75:
@@ -122,7 +122,7 @@ def results(user_id):
 
 def get_tips_for_category(category):
     tips = {
-        "Financial Butterfly": [
+        "Carefree Butterfly": [
             "Start tracking your expenses to understand your spending habits.",
             "Set up a small emergency fund to cover unexpected costs.",
             "Learn about budgeting basics and try creating a simple budget.",
