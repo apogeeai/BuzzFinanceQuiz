@@ -37,7 +37,7 @@
                 <td class="p-2">{{ result.user.name }}</td>
                 <td class="p-2">{{ result.user.email }}</td>
                 <td class="p-2">{{ result.result_category }}</td>
-                <td class="p-2">{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td class="p-2">{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') if result.created_at else 'N/A' }}</td>
             </tr>
             {% endfor %}
         </tbody>

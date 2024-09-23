@@ -27,17 +27,12 @@ class QuizResponse(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answers = db.Column(db.Text, nullable=False)
     result_category = db.Column(db.String(50), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
         db.create_all()
-        inspector = db.inspect(db.engine)
-        if 'result_category' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
-            db.engine.execute('ALTER TABLE quiz_response ADD COLUMN result_category VARCHAR(50)')
-        if 'created_at' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
-            db.engine.execute('ALTER TABLE quiz_response ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
 
 def admin_required(f):
     @wraps(f)
