@@ -42,15 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 "I've started saving but could do more.",
                 "I'm confident in my retirement strategy."
             ]
-        },
-        {
-            question: "Choose the animal that best represents your financial style:",
-            options: [
-                "A carefree butterfly",
-                "A curious kitten",
-                "A diligent beaver",
-                "A wise owl"
-            ]
         }
     ];
 

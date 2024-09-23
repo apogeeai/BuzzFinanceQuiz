@@ -59,14 +59,14 @@ def quiz():
 
 def calculate_result_category(answers):
     total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 4 * len(answers)
+    max_score = 3 * len(answers)  # Changed from 4 to 3 as we now have 4 questions
     percentage = (total_score / max_score) * 100
     
-    if percentage < 25:
+    if percentage < 33:  # Adjusted thresholds
         return "Carefree Butterfly"
-    elif percentage < 50:
+    elif percentage < 66:
         return "Curious Kitten"
-    elif percentage < 75:
+    elif percentage < 85:
         return "Diligent Beaver"
     else:
         return "Wise Owl"
@@ -112,7 +112,7 @@ def results(user_id):
 
     answers = quiz_response.answers
     total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 4 * len(answers)
+    max_score = 3 * len(answers)  # Changed from 4 to 3 as we now have 4 questions
     percentage = (total_score / max_score) * 100
 
     result = quiz_response.result_category
