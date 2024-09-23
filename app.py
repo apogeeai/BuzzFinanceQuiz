@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from functools import wraps
+from datetime import datetime
 
 class Base(DeclarativeBase):
     pass
@@ -26,15 +27,17 @@ class QuizResponse(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     answers = db.Column(db.Text, nullable=False)
     result_category = db.Column(db.String(50), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
         db.create_all()
-        # Check if the result_category column exists, if not, add it
         inspector = db.inspect(db.engine)
         if 'result_category' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
             db.engine.execute('ALTER TABLE quiz_response ADD COLUMN result_category VARCHAR(50)')
+        if 'created_at' not in [c['name'] for c in inspector.get_columns('quiz_response')]:
+            db.engine.execute('ALTER TABLE quiz_response ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
 
 def admin_required(f):
     @wraps(f)
@@ -178,10 +181,13 @@ def admin_dashboard():
         db.func.count(QuizResponse.id)
     ).group_by(QuizResponse.result_category).all()
     
+    recent_results = db.session.query(QuizResponse, User).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
+    
     return render_template('admin_dashboard.html',
                            total_users=total_users,
                            total_quizzes=total_quizzes,
-                           category_distribution=category_distribution)
+                           category_distribution=category_distribution,
+                           recent_results=recent_results)
 
 if __name__ == '__main__':
     create_tables()

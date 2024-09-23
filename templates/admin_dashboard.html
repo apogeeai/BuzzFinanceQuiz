@@ -2,14 +2,16 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Admin Dashboard</h1>
-<div class="space-y-6">
-    <div class="bg-white p-4 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-2">Quiz Statistics</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Overview</h2>
         <p>Total Users: {{ total_users }}</p>
         <p>Total Quizzes Taken: {{ total_quizzes }}</p>
     </div>
-    <div class="bg-white p-4 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-2">Category Distribution</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold mb-4">Category Distribution</h2>
         <ul>
             {% for category, count in category_distribution %}
             <li>{{ category }}: {{ count }}</li>
@@ -17,5 +19,30 @@
         </ul>
     </div>
 </div>
-<a href="{{ url_for('admin_logout') }}" class="block mt-6 text-center text-blue-600 hover:underline">Logout</a>
+
+<div class="mt-8">
+    <h2 class="text-2xl font-semibold mb-4">Recent Quiz Results</h2>
+    <table class="w-full bg-white rounded-lg shadow-md">
+        <thead>
+            <tr class="bg-blue-100">
+                <th class="p-2 text-left">User</th>
+                <th class="p-2 text-left">Email</th>
+                <th class="p-2 text-left">Result Category</th>
+                <th class="p-2 text-left">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in recent_results %}
+            <tr>
+                <td class="p-2">{{ result.user.name }}</td>
+                <td class="p-2">{{ result.user.email }}</td>
+                <td class="p-2">{{ result.result_category }}</td>
+                <td class="p-2">{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('admin_logout') }}" class="mt-8 inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
 {% endblock %}
