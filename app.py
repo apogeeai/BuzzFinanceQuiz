@@ -174,21 +174,31 @@ def admin_logout():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    total_users = User.query.count()
-    total_quizzes = QuizResponse.query.count()
-    category_distribution = db.session.query(
-        QuizResponse.result_category,
-        db.func.count(QuizResponse.id)
-    ).group_by(QuizResponse.result_category).all()
-    
-    recent_results = db.session.query(QuizResponse, User).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
-    
-    return render_template('admin_dashboard.html',
-                           total_users=total_users,
-                           total_quizzes=total_quizzes,
-                           category_distribution=category_distribution,
-                           recent_results=recent_results)
+    try:
+        app.logger.info("Accessing admin dashboard")
+        total_users = User.query.count()
+        app.logger.info(f"Total users: {total_users}")
+        total_quizzes = QuizResponse.query.count()
+        app.logger.info(f"Total quizzes: {total_quizzes}")
+        
+        category_distribution = db.session.query(
+            QuizResponse.result_category,
+            db.func.count(QuizResponse.id)
+        ).group_by(QuizResponse.result_category).all()
+        app.logger.info(f"Category distribution: {category_distribution}")
+        
+        recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
+        app.logger.info(f"Recent results count: {len(recent_results)}")
+        
+        return render_template('admin_dashboard.html',
+                               total_users=total_users,
+                               total_quizzes=total_quizzes,
+                               category_distribution=category_distribution,
+                               recent_results=recent_results)
+    except Exception as e:
+        app.logger.error(f"Error in admin_dashboard: {str(e)}")
+        return render_template('error.html', error_message="An error occurred while loading the admin dashboard."), 500
 
 if __name__ == '__main__':
     create_tables()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
