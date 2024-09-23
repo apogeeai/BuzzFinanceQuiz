@@ -185,14 +185,28 @@ def admin_dashboard():
         recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
         app.logger.info(f"Recent results count: {len(recent_results)}")
         
+        success_message = request.args.get('success_message')
+        
         return render_template('admin_dashboard.html',
                                total_users=total_users,
                                total_quizzes=total_quizzes,
                                category_distribution=category_distribution,
-                               recent_results=recent_results)
+                               recent_results=recent_results,
+                               success_message=success_message)
     except Exception as e:
         app.logger.error(f"Error in admin_dashboard: {str(e)}")
         return render_template('error.html', error_message="An error occurred while loading the admin dashboard."), 500
+
+@app.route('/admin/clear_results', methods=['POST'])
+@admin_required
+def clear_results():
+    try:
+        QuizResponse.query.delete()
+        db.session.commit()
+        return redirect(url_for('admin_dashboard', success_message="All quiz results have been cleared successfully."))
+    except Exception as e:
+        db.session.rollback()
+        return render_template('error.html', error_message="An error occurred while clearing the results."), 500
 
 if __name__ == '__main__':
     create_tables()
