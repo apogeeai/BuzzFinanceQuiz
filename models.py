@@ -13,7 +13,7 @@ class User(db.Model):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
-    email = Column(String(120), unique=True, nullable=False)
+    email = Column(String(120), nullable=False)
     quiz_responses = relationship('QuizResponse', back_populates='user')
 
 class QuizResponse(db.Model):
