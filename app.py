@@ -23,6 +23,11 @@ def create_tables():
     with app.app_context():
         db.create_all()
 
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -91,8 +96,38 @@ def results(user_id):
     percentage = (total_score / max_score) * 100
 
     result = quiz_response.result_category
+    tips = get_tips_for_category(result)
 
-    return render_template('results.html', result=result, percentage=percentage)
+    return render_template('results.html', result=result, percentage=percentage, tips=tips)
+
+def get_tips_for_category(category):
+    tips = {
+        "Carefree Butterfly": [
+            "Start tracking your expenses to understand your spending habits.",
+            "Set up a small emergency fund to cover unexpected costs.",
+            "Learn about budgeting basics and try creating a simple budget.",
+            "Consider setting up automatic savings to build good financial habits."
+        ],
+        "Curious Kitten": [
+            "Increase your emergency fund to cover 3-6 months of expenses.",
+            "Look into different savings accounts and their interest rates.",
+            "Start learning about investing basics and consider low-risk options.",
+            "Review your expenses and identify areas where you can cut back."
+        ],
+        "Diligent Beaver": [
+            "Diversify your investments to spread risk and potentially increase returns.",
+            "Consider increasing your retirement contributions if possible.",
+            "Look into additional income streams or side hustles.",
+            "Start setting long-term financial goals and create plans to achieve them."
+        ],
+        "Wise Owl": [
+            "Consider advanced investment strategies or consult with a financial advisor.",
+            "Look into estate planning and wealth transfer strategies.",
+            "Explore ways to optimize your tax strategy.",
+            "Consider philanthropic opportunities or setting up a charitable foundation."
+        ]
+    }
+    return tips.get(category, [])
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

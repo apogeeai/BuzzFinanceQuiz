@@ -8,5 +8,32 @@
 </div>
 <p class="text-center mb-6">Your financial health score: {{ percentage|round|int }}%</p>
 
+<!-- Personalized Financial Tips -->
+<h2 class="text-2xl font-semibold mb-4 text-center" style="color: #f36814;">Personalized Financial Tips</h2>
+<ul class="list-disc list-inside mb-6">
+    {% for tip in tips %}
+    <li class="mb-2">{{ tip }}</li>
+    {% endfor %}
+</ul>
+
+<!-- Social Share Buttons -->
+<h3 class="text-xl font-semibold mb-4 text-center text-blue-600">Share Your Results</h3>
+<div class="flex justify-center space-x-4 mb-6">
+    <a href="https://twitter.com/intent/tweet?text=I%20just%20took%20the%20Financial%20Health%20Quiz%20and%20got%20{{ result|urlencode }}!%20My%20score%20is%20{{ percentage|round|int }}%25.%20Take%20the%20quiz%20now%20at%20{{ request.url_root|urlencode }}" target="_blank" class="social-icon-btn">
+        <i class="fab fa-twitter"></i>
+    </a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" target="_blank" class="social-icon-btn">
+        <i class="fab fa-facebook-f"></i>
+    </a>
+    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url|urlencode }}&title=Financial%20Health%20Quiz%20Results&summary=I%20just%20took%20the%20Financial%20Health%20Quiz%20and%20got%20{{ result|urlencode }}!%20My%20score%20is%20{{ percentage|round|int }}%25." target="_blank" class="social-icon-btn">
+        <i class="fab fa-linkedin-in"></i>
+    </a>
+</div>
+
+<!-- Learn More Button -->
+<a href="https://www.metrocu.org/personal/metro-investment-services" target="_blank" class="gradient-button w-full block text-center">
+    Learn more about how Metro can help!
+</a>
+
 <a href="{{ url_for('index') }}" class="block mt-6 text-center text-blue-600 hover:underline">Take the quiz again</a>
 {% endblock %}
