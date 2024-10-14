@@ -4,31 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from functools import wraps
 from datetime import datetime
-
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
+from models import db, User, QuizResponse
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
 db.init_app(app)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-
-class QuizResponse(db.Model):
-    __tablename__ = 'quiz_response'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    answers = db.Column(db.Text, nullable=False)
-    result_category = db.Column(db.String(50), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    user = db.relationship('User', backref=db.backref('quiz_responses', lazy=True))
 
 def create_tables():
     with app.app_context():
@@ -51,7 +33,9 @@ def quiz():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        user = User(name=name, email=email)
+        user = User()
+        user.name = name
+        user.email = email
         db.session.add(user)
         db.session.commit()
         return render_template('quiz.html', user_id=user.id)
@@ -59,10 +43,10 @@ def quiz():
 
 def calculate_result_category(answers):
     total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 3 * len(answers)  # Changed from 4 to 3 as we now have 4 questions
+    max_score = 3 * len(answers)
     percentage = (total_score / max_score) * 100
     
-    if percentage < 33:  # Adjusted thresholds
+    if percentage < 33:
         return "Carefree Butterfly"
     elif percentage < 66:
         return "Curious Kitten"
@@ -82,7 +66,9 @@ def submit_quiz():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        quiz_response = QuizResponse(user_id=user_id, answers=answers)
+        quiz_response = QuizResponse()
+        quiz_response.user_id = user_id
+        quiz_response.answers = answers
         quiz_response.result_category = calculate_result_category(answers)
         db.session.add(quiz_response)
         db.session.commit()
@@ -104,7 +90,7 @@ def results(user_id):
 
     answers = quiz_response.answers
     total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 3 * len(answers)  # Changed from 4 to 3 as we now have 4 questions
+    max_score = 3 * len(answers)
     percentage = (total_score / max_score) * 100
 
     result = quiz_response.result_category
@@ -146,7 +132,7 @@ def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == 'admin' and password == 'secret':  # Replace with secure authentication
+        if username == 'admin' and password == 'secret':
             session['admin_logged_in'] = True
             return redirect(url_for('admin_dashboard'))
         else:

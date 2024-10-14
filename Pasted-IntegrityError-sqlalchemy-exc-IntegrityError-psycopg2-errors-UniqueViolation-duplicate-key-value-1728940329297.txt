@@ -1,0 +1,39 @@
+IntegrityError
+sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "user_email_key"
+DETAIL:  Key (email)=(test@test.net) already exists.
+
+[SQL: INSERT INTO "user" (name, email) VALUES (%(name)s, %(email)s) RETURNING "user".id]
+[parameters: {'name': 'Test', 'email': 'test@test.net'}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+Traceback (most recent call last)
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1476, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1473, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 882, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 880, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 865, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/app.py", line 56, in quiz
+db.session.commit()
+^^^^^^^^^^^^^^^^^^^
+File "/home/runner/BuzzFinanceQuiz/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/scoping.py", line 597, in commit
+return self._proxied.commit()
