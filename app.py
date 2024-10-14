@@ -1,15 +1,16 @@
-import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
+from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import datetime
+import os
 from models import db, User, QuizResponse
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
+app.secret_key = os.urandom(24)
+
 db.init_app(app)
 
 def create_tables():
@@ -24,7 +25,7 @@ def update_schema():
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'admin_logged_in' not in session or not session['admin_logged_in']:
+        if not session.get('admin_logged_in'):
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -33,30 +34,22 @@ def admin_required(f):
 def index():
     return render_template('index.html')
 
-@app.route('/quiz', methods=['GET', 'POST'])
+@app.route('/quiz', methods=['POST'])
 def quiz():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
+    name = request.form.get('name')
+    email = request.form.get('email')
+
+    if not name or not email:
+        return render_template('error.html', error_message="Name and email are required.")
+
+    try:
         user = User(name=name, email=email)
         db.session.add(user)
         db.session.commit()
         return render_template('quiz.html', user_id=user.id)
-    return render_template('quiz.html')
-
-def calculate_result_category(answers):
-    total_score = sum(ord(answer) - ord('A') for answer in answers)
-    max_score = 3 * len(answers)
-    percentage = (total_score / max_score) * 100
-    
-    if percentage < 33:
-        return "Carefree Butterfly"
-    elif percentage < 66:
-        return "Curious Kitten"
-    elif percentage < 85:
-        return "Diligent Beaver"
-    else:
-        return "Wise Owl"
+    except Exception as e:
+        db.session.rollback()
+        return render_template('error.html', error_message=str(e))
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
@@ -161,13 +154,50 @@ def admin_dashboard():
         
         recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
         
+        # Calculate average score
+        average_score = db.session.query(db.func.avg(
+            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 1, 1)) - 65) +
+            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 2, 1)) - 65) +
+            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 3, 1)) - 65) +
+            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 4, 1)) - 65)
+        )).scalar()
+
+        if average_score is not None:
+            average_score = (average_score / 12) * 100  # Convert to percentage
+        else:
+            average_score = 0
+
+        # Get daily quiz submissions for the last 7 days
+        from sqlalchemy import func
+        from datetime import datetime, timedelta
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        daily_submissions = db.session.query(
+            func.date(QuizResponse.created_at).label('date'),
+            func.count(QuizResponse.id).label('count')
+        ).filter(QuizResponse.created_at >= seven_days_ago).group_by(func.date(QuizResponse.created_at)).all()
+
+        daily_submissions_dict = {str(day.date): day.count for day in daily_submissions}
+        
         return render_template('admin_dashboard.html',
                                total_users=total_users,
                                total_quizzes=total_quizzes,
                                category_distribution=category_distribution,
-                               recent_results=recent_results)
+                               recent_results=recent_results,
+                               average_score=average_score,
+                               daily_submissions=daily_submissions_dict)
     except Exception as e:
         return render_template('error.html', error_message="An error occurred while loading the admin dashboard."), 500
+
+def calculate_result_category(answers):
+    total_score = sum(ord(answer) - ord('A') for answer in answers)
+    if total_score <= 3:
+        return "Carefree Butterfly"
+    elif total_score <= 6:
+        return "Curious Kitten"
+    elif total_score <= 9:
+        return "Diligent Beaver"
+    else:
+        return "Wise Owl"
 
 if __name__ == '__main__':
     create_tables()
