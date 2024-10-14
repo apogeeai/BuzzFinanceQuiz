@@ -1,10 +1,12 @@
-
+import logging
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
 from models import db, User, QuizResponse
+from sqlalchemy import func
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -12,6 +14,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.urandom(24)
 
 db.init_app(app)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_tables():
     with app.app_context():
@@ -49,7 +55,8 @@ def quiz():
         return render_template('quiz.html', user_id=user.id)
     except Exception as e:
         db.session.rollback()
-        return render_template('error.html', error_message=str(e))
+        logger.error(f"Error creating user: {str(e)}")
+        return render_template('error.html', error_message="An error occurred while starting the quiz. Please try again.")
 
 @app.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
@@ -62,9 +69,7 @@ def submit_quiz():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        quiz_response = QuizResponse()
-        quiz_response.user_id = user_id
-        quiz_response.answers = answers
+        quiz_response = QuizResponse(user_id=user_id, answers=answers)
         quiz_response.result_category = calculate_result_category(answers)
         db.session.add(quiz_response)
         db.session.commit()
@@ -72,7 +77,8 @@ def submit_quiz():
         return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error submitting quiz: {str(e)}")
+        return jsonify({'error': 'An error occurred while submitting the quiz'}), 500
 
 @app.route('/results/<int:user_id>')
 def results(user_id):
@@ -149,17 +155,17 @@ def admin_dashboard():
         
         category_distribution = db.session.query(
             QuizResponse.result_category,
-            db.func.count(QuizResponse.id)
+            func.count(QuizResponse.id)
         ).group_by(QuizResponse.result_category).all()
         
         recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
         
         # Calculate average score
-        average_score = db.session.query(db.func.avg(
-            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 1, 1)) - 65) +
-            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 2, 1)) - 65) +
-            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 3, 1)) - 65) +
-            db.func.sum(db.func.ascii(db.func.substr(QuizResponse.answers, 4, 1)) - 65)
+        average_score = db.session.query(func.avg(
+            func.sum(func.ascii(func.substr(QuizResponse.answers, 1, 1)) - 65) +
+            func.sum(func.ascii(func.substr(QuizResponse.answers, 2, 1)) - 65) +
+            func.sum(func.ascii(func.substr(QuizResponse.answers, 3, 1)) - 65) +
+            func.sum(func.ascii(func.substr(QuizResponse.answers, 4, 1)) - 65)
         )).scalar()
 
         if average_score is not None:
@@ -168,8 +174,6 @@ def admin_dashboard():
             average_score = 0
 
         # Get daily quiz submissions for the last 7 days
-        from sqlalchemy import func
-        from datetime import datetime, timedelta
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
         daily_submissions = db.session.query(
             func.date(QuizResponse.created_at).label('date'),
@@ -186,7 +190,8 @@ def admin_dashboard():
                                average_score=average_score,
                                daily_submissions=daily_submissions_dict)
     except Exception as e:
-        return render_template('error.html', error_message="An error occurred while loading the admin dashboard."), 500
+        logger.error(f"Error in admin dashboard: {str(e)}")
+        return render_template('error.html', error_message="An error occurred while loading the admin dashboard. Please try again later."), 500
 
 def calculate_result_category(answers):
     total_score = sum(ord(answer) - ord('A') for answer in answers)
@@ -201,5 +206,4 @@ def calculate_result_category(answers):
 
 if __name__ == '__main__':
     create_tables()
-    update_schema()
     app.run(host='0.0.0.0', port=5000, debug=True)
