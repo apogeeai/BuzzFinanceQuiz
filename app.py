@@ -14,7 +14,8 @@ db.init_app(app)
 
 def create_tables():
     with app.app_context():
-        db.create_all()
+        db.drop_all()  # Drop all existing tables
+        db.create_all()  # Create new tables
 
 def admin_required(f):
     @wraps(f)
@@ -33,9 +34,7 @@ def quiz():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        user = User()
-        user.name = name
-        user.email = email
+        user = User(name=name, email=email)
         db.session.add(user)
         db.session.commit()
         return render_template('quiz.html', user_id=user.id)
