@@ -19,7 +19,7 @@ db.init_app(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
 
 class QuizResponse(db.Model):
     __tablename__ = 'quiz_response'
@@ -78,25 +78,17 @@ def submit_quiz():
         user_id = data.get('user_id')
         answers = data.get('answers')
         
-        print(f"Debug: Received user_id: {user_id}, answers: {answers}")
-        
         user = User.query.get(user_id)
         if not user:
-            print(f"Debug: User not found for user_id: {user_id}")
             return jsonify({'error': 'User not found'}), 404
 
         quiz_response = QuizResponse(user_id=user_id, answers=answers)
         quiz_response.result_category = calculate_result_category(answers)
         db.session.add(quiz_response)
         db.session.commit()
-        
-        print(f"Debug: Quiz response saved successfully for user_id: {user_id}")
 
-        response = jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
-        print(f"Debug: Returning response: {response.get_data(as_text=True)}")
-        return response
+        return jsonify({'message': 'Quiz submitted successfully', 'user_id': user_id})
     except Exception as e:
-        print(f"Debug: Error in submit_quiz: {str(e)}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
@@ -170,43 +162,23 @@ def admin_logout():
 @admin_required
 def admin_dashboard():
     try:
-        app.logger.info("Accessing admin dashboard")
         total_users = User.query.count()
-        app.logger.info(f"Total users: {total_users}")
         total_quizzes = QuizResponse.query.count()
-        app.logger.info(f"Total quizzes: {total_quizzes}")
         
         category_distribution = db.session.query(
             QuizResponse.result_category,
             db.func.count(QuizResponse.id)
         ).group_by(QuizResponse.result_category).all()
-        app.logger.info(f"Category distribution: {category_distribution}")
         
         recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
-        app.logger.info(f"Recent results count: {len(recent_results)}")
-        
-        success_message = request.args.get('success_message')
         
         return render_template('admin_dashboard.html',
                                total_users=total_users,
                                total_quizzes=total_quizzes,
                                category_distribution=category_distribution,
-                               recent_results=recent_results,
-                               success_message=success_message)
+                               recent_results=recent_results)
     except Exception as e:
-        app.logger.error(f"Error in admin_dashboard: {str(e)}")
         return render_template('error.html', error_message="An error occurred while loading the admin dashboard."), 500
-
-@app.route('/admin/clear_results', methods=['POST'])
-@admin_required
-def clear_results():
-    try:
-        QuizResponse.query.delete()
-        db.session.commit()
-        return redirect(url_for('admin_dashboard', success_message="All quiz results have been cleared successfully."))
-    except Exception as e:
-        db.session.rollback()
-        return render_template('error.html', error_message="An error occurred while clearing the results."), 500
 
 if __name__ == '__main__':
     create_tables()
