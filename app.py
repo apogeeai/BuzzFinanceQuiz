@@ -23,11 +23,6 @@ def create_tables():
     with app.app_context():
         db.create_all()
 
-def update_schema():
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -161,16 +156,21 @@ def admin_dashboard():
         recent_results = db.session.query(QuizResponse).join(User).order_by(QuizResponse.created_at.desc()).limit(10).all()
         
         # Calculate average score
-        average_score = db.session.query(func.avg(
-            func.sum(func.ascii(func.substr(QuizResponse.answers, 1, 1)) - 65) +
-            func.sum(func.ascii(func.substr(QuizResponse.answers, 2, 1)) - 65) +
-            func.sum(func.ascii(func.substr(QuizResponse.answers, 3, 1)) - 65) +
-            func.sum(func.ascii(func.substr(QuizResponse.answers, 4, 1)) - 65)
-        )).scalar()
+        average_score = db.session.query(
+            func.avg(
+                func.cast(
+                    func.sum(
+                        func.ascii(func.substr(QuizResponse.answers, 1, 1)) +
+                        func.ascii(func.substr(QuizResponse.answers, 2, 1)) +
+                        func.ascii(func.substr(QuizResponse.answers, 3, 1)) +
+                        func.ascii(func.substr(QuizResponse.answers, 4, 1))
+                    ) - 4 * 65, # Subtract 65 for each answer (A = 0, B = 1, etc.)
+                    db.Float
+                ) / 12 * 100 # Divide by max score (12) and multiply by 100 for percentage
+            )
+        ).scalar()
 
-        if average_score is not None:
-            average_score = (average_score / 12) * 100  # Convert to percentage
-        else:
+        if average_score is None:
             average_score = 0
 
         # Get daily quiz submissions for the last 7 days
