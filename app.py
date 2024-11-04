@@ -83,11 +83,11 @@ def get_tips_for_category(category):
 
 def calculate_result_category(answers):
     total_score = sum(ord(answer) - ord('A') for answer in answers)
-    if total_score <= 3:
+    if total_score <= 2:
         return "Carefree Butterfly"
-    elif total_score <= 6:
+    elif total_score <= 5:
         return "Curious Kitten"
-    elif total_score <= 9:
+    elif total_score <= 8:
         return "Diligent Beaver"
     else:
         return "Wise Owl"
