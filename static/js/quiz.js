@@ -42,6 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 "I've started saving but could do more.",
                 "I'm confident in my retirement strategy."
             ]
+        },
+        {
+            question: "Choose the animal that best represents your financial style:",
+            options: [
+                "A carefree butterfly",
+                "A curious kitten",
+                "A diligent beaver",
+                "A wise owl"
+            ]
         }
     ];
 
@@ -75,24 +84,28 @@ document.addEventListener('DOMContentLoaded', () => {
         buttons[index].classList.add('bg-blue-200');
     }
 
-    nextBtn.addEventListener('click', () => {
-        currentQuestion++;
-        if (currentQuestion < questions.length) {
-            displayQuestion();
-        } else {
-            submitQuiz();
-        }
-    });
+    function showResults(data) {
+        quizContainer.innerHTML = `
+            <h2 class="text-2xl font-semibold mb-4 text-center text-blue-600">${data.result}</h2>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${data.percentage}%"></div>
+            </div>
+            <p class="text-center mb-6">Your financial health score: ${Math.round(data.percentage)}%</p>
+            <h3 class="text-xl font-semibold mb-4">Your Financial Tips:</h3>
+            <ul class="list-disc list-inside mb-6">
+                ${data.tips.map(tip => `<li class="mb-2">${tip}</li>`).join('')}
+            </ul>
+            <button onclick="window.location.reload()" class="gradient-button w-full mt-4">Take Quiz Again</button>
+        `;
+    }
 
     function submitQuiz() {
-        const userId = quizContainer.dataset.userId;
         fetch('/submit_quiz', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: userId,
                 answers: answers.join('')
             }),
         })
@@ -108,13 +121,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-            window.location.href = `/results/${data.user_id}`;
+            showResults(data);
         })
         .catch((error) => {
             console.error('Error:', error);
             alert(`An error occurred while submitting the quiz: ${error.message}`);
         });
     }
+
+    nextBtn.addEventListener('click', () => {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            displayQuestion();
+        } else {
+            submitQuiz();
+        }
+    });
 
     displayQuestion();
 });
