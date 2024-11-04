@@ -17,6 +17,11 @@ def create_tables():
     with app.app_context():
         db.create_all()
 
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -94,4 +99,5 @@ def calculate_result_category(answers):
 
 if __name__ == '__main__':
     create_tables()
+    update_schema()  # Added the schema update call
     app.run(host='0.0.0.0', port=5000, debug=True)
